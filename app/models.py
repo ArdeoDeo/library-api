@@ -18,5 +18,8 @@ class Book(Base):
     author: Mapped[str] = mapped_column(String, nullable=False)
 
     is_borrowed: Mapped[bool] = mapped_column(default=False)
-    borrower_card_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    borrower_card_number: Mapped[str | None] = mapped_column(
+        String(6),
+        nullable=True,
+    )
     borrowed_at: Mapped[datetime | None] = mapped_column(nullable=True)

@@ -6,7 +6,8 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://library:library@db:5432/library
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:18
@@ -18,6 +19,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U library -d library"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:

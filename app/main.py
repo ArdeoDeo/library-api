@@ -1,5 +1,5 @@
-from typing import Annotated
 from datetime import datetime, timezone
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 from sqlalchemy import select
@@ -20,10 +20,10 @@ app = FastAPI()
     response_model=BookResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def create_book(book: BookCreate, db: Session = Depends(get_db)):
+def create_book(book: BookCreate, db: Session = Depends(get_db)) -> Book:
     existing_book = db.get(Book, book.serial_number)
 
-    if existing_book:
+    if existing_book is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Book with this serial number already exists",
@@ -43,8 +43,8 @@ def create_book(book: BookCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/books", response_model=list[BookResponse])
-def get_books(db: Session = Depends(get_db)):
-    return db.scalars(select(Book)).all()
+def get_books(db: Session = Depends(get_db)) -> list[Book]:
+    return list(db.scalars(select(Book)))
 
 
 @app.patch("/books/{serial_number}", response_model=BookResponse)
@@ -52,10 +52,10 @@ def update_book_status(
     serial_number: Annotated[int, Path(ge=100000, le=999999)],
     update: BookStatusUpdate,
     db: Session = Depends(get_db),
-):
+) -> Book:
     book = db.get(Book, serial_number)
 
-    if not book:
+    if book is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Book not found",
@@ -70,7 +70,7 @@ def update_book_status(
 
         book.is_borrowed = True
         book.borrower_card_number = update.borrower_card_number
-        book.borrowed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        book.borrowed_at = datetime.now(timezone.utc)
     else:
         book.is_borrowed = False
         book.borrower_card_number = None
@@ -89,10 +89,10 @@ def update_book_status(
 def delete_book(
     serial_number: Annotated[int, Path(ge=100000, le=999999)],
     db: Session = Depends(get_db),
-):
+) -> Response:
     book = db.get(Book, serial_number)
 
-    if not book:
+    if book is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Book not found",

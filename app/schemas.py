@@ -4,9 +4,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     serial_number: int = Field(ge=100000, le=999999)
-    title: str = Field(min_length=1)
-    author: str = Field(min_length=1)
+    title: str = Field(min_length=1, max_length=255)
+    author: str = Field(min_length=1, max_length=255)
 
 
 class BookStatusUpdate(BaseModel):

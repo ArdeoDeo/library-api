@@ -1,0 +1,21 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: library
+      POSTGRES_USER: library
+      POSTGRES_PASSWORD: library
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:

@@ -63,6 +63,23 @@ def test_create_duplicate_book(client: TestClient) -> None:
     assert response.status_code == 409
 
 
+@pytest.mark.parametrize("serial_number", [99999, 1000000])
+def test_create_book_requires_six_digit_serial_number(
+    client: TestClient,
+    serial_number: int,
+) -> None:
+    response = client.post(
+        "/books",
+        json={
+            "serial_number": serial_number,
+            "title": "1984",
+            "author": "George Orwell",
+        },
+    )
+
+    assert response.status_code == 422
+
+
 @pytest.mark.parametrize("field", ["title", "author"])
 def test_create_book_rejects_blank_text(
     client: TestClient,
@@ -191,7 +208,14 @@ def test_borrow_book_requires_card_number(client: TestClient) -> None:
     assert response.json() == {"detail": "Borrower card number is required"}
 
 
-def test_borrow_book_rejects_invalid_card_number(client: TestClient) -> None:
+@pytest.mark.parametrize(
+    "card_number",
+    ["12345", "1234567", "abcdef", "١٢٣٤٥٦"],
+)
+def test_borrow_book_rejects_invalid_card_number(
+    client: TestClient,
+    card_number: str,
+) -> None:
     client.post(
         "/books",
         json={
@@ -205,7 +229,7 @@ def test_borrow_book_rejects_invalid_card_number(client: TestClient) -> None:
         "/books/100001",
         json={
             "is_borrowed": True,
-            "borrower_card_number": "12345",
+            "borrower_card_number": card_number,
         },
     )
 

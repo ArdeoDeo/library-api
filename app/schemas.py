@@ -15,7 +15,7 @@ class BookStatusUpdate(BaseModel):
     is_borrowed: bool
     borrower_card_number: str | None = Field(
         default=None,
-        pattern=r"^\d{6}$",
+        pattern=r"^[0-9]{6}$",
     )
 
 
